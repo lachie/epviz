@@ -1,50 +1,40 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (Element, el, text, column, row, fill)
+import ColourHeat exposing (heat)
+import Element exposing (Element, column, el, fill, rgb, row, text)
+import Element.Background as Background
+import Element.Events exposing (onClick)
 import Html exposing (Html)
+import ShowData
+import Types exposing (Episode, Season, Show)
 
 
 
 ---- MODEL ----
-
-
-type alias Episode =
-    { title : String
-    , rating : Float
-    }
-
-
-type alias Season =
-    { title : String
-    , episodes : List Episode
-    }
-
-
-type alias Show =
-    { title : String
-    , seasons : List Season
-    }
-
-
-breakingBadSeasons =
-    [ Season "1" [ (Episode "Pilot" 0.9), (Episode "Cat's in the Bag..." 0.87) ]
-    , Season "2" [ (Episode "Seven Thirty-Seven" 0.87), (Episode "Grilled" 0.93), (Episode "Bit by a Dead Bee" 0.84) ]
-    ]
-
-
-breakingBad =
-    Show "Breaking Bad" breakingBadSeasons
+-- breakingBadSeasons =
+-- [ Season "1" [ Episode "Pilot" 0.9, Episode "Cat's in the Bag..." 0.87 ]
+-- , Season "2" [ Episode "Seven Thirty-Seven" 0.87, Episode "Grilled" 0.93, Episode "Bit by a Dead Bee" 0.84 ]
+-- ]
+-- breakingBad =
+-- Show "Breaking Bad" breakingBadSeasons
 
 
 type alias Model =
     { show : Maybe Show
+    , shows : List Show
+    , focusedEpisode : Maybe Episode
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { show = Just breakingBad }, Cmd.none )
+    ( { shows = ShowData.shows
+      , show = List.head ShowData.shows
+      , focusedEpisode = Nothing
+      }
+    , Cmd.none
+    )
 
 
 
@@ -52,12 +42,18 @@ init =
 
 
 type Msg
-    = NoOp
+    = SelectShow Types.Show
+    | FocusEpisode Types.Episode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        SelectShow show ->
+            ( { model | show = Just show }, Cmd.none )
+
+        FocusEpisode ep ->
+            ( { model | focusedEpisode = Just ep }, Cmd.none )
 
 
 
@@ -67,62 +63,136 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Element.layout []
-      (case model.show of
-        Just show -> showView show
-        Nothing -> (el [] (text "no show bro"))
+        (column []
+            [ showsView model.shows
+            , case model.show of
+                Just show ->
+                    showView (showViewModel show model.focusedEpisode)
+
+                Nothing ->
+                    el [] (text "no show bro")
+            ]
         )
 
-showView : Show -> Element msg
-showView show = 
-  column [] 
-    [ row [] [ (el [] (text show.title)) ]
-    , row [] [ epGridView show.seasons ]
-    ]
 
-epGridView : List Season -> Element msg
-epGridView seasons = 
-  Element.table []
-    { data = (epGridCells seasons)
-    , columns = (epGridColumns epCellView seasons )
+showsView : List Show -> Element Msg
+showsView shows =
+    row []
+        (List.map
+            (\s ->
+                el [ onClick (SelectShow s) ] (text s.title)
+            )
+            shows
+        )
+
+
+showViewModel show focusEp =
+    { show = show
+    , heat = ColourHeat.heat (Types.minShowRating show) (Types.maxShowRating show)
+    , episode = focusEp
     }
 
-type alias Row = List (Maybe Episode)
 
-nth : Int -> List a -> Maybe a
-nth n = List.head << List.drop (n-1)
+type alias ShowViewModel =
+    { show : Show
+    , episode : Maybe Episode
+    , heat : Float -> Element.Color
+    }
+
+
+showView : ShowViewModel -> Element Msg
+showView showV =
+    column []
+        [ row [] [ el [] (text showV.show.title) ]
+        , row [] [ epGridView showV ]
+        , row [] [ epDetailView showV ]
+        ]
+
+
+epDetailView showV =
+    case showV.episode of
+        Nothing ->
+            Element.none
+
+        Just ep ->
+            let
+                rating =
+                    (ep.rating * 100) |> round |> toFloat |> (*) 0.1
+
+                --  |> (/) 10
+            in
+            Element.paragraph []
+                [ text ep.title
+                , text (String.fromFloat rating ++ "/10")
+                ]
+
+
+epGridView : ShowViewModel -> Element Msg
+epGridView showV =
+    let
+        indexCol =
+            { header = Element.none
+            , width = fill
+            , view = \i _ -> text (String.fromInt (i + 1))
+            }
+
+        seasons =
+            showV.show.seasons
+    in
+    Element.indexedTable []
+        { data = transposeSeasons seasons
+        , columns = indexCol :: epGridColumns (epCellView showV) seasons
+        }
+
+
+epCellView : ShowViewModel -> Int -> Maybe Episode -> Element Msg
+epCellView showV _ maybeEp =
+    case maybeEp of
+        Just ep ->
+            let
+                r =
+                    ep.rating
+
+                color =
+                    showV.heat r
+            in
+            el
+                [ Background.color color
+                , onClick (FocusEpisode ep)
+                ]
+                (text " ")
+
+        Nothing ->
+            el [] Element.none
+
+
+transposeSeasons : List Season -> List (List (Maybe Episode))
+transposeSeasons seasons =
+    seasons |> List.map .episodes |> transposeJagged
+
+
+type alias Row =
+    List (Maybe Episode)
+
 
 episodeInRowAtColumn : Int -> Row -> Maybe Episode
-episodeInRowAtColumn n = List.drop (n-1) >> List.head >> Maybe.withDefault Nothing
+episodeInRowAtColumn n =
+    List.drop n >> List.head >> Maybe.withDefault Nothing
 
-seasonRow : List Season -> Int -> Row
-seasonRow seasons index =
-  List.map ((nth index) << .episodes) seasons
 
-epGridCells : List Season -> (List Row)
-epGridCells seasons = 
-  let
-      length = seasons |> (List.map (List.length << .episodes)) |> List.maximum |> Maybe.withDefault 0
-  in
-    List.map (seasonRow seasons) (List.range 0 (length-1))
+epGridColumns : (Int -> Maybe Episode -> Element Msg) -> List Season -> List (Element.IndexedColumn Row Msg)
+epGridColumns cellView =
+    let
+        col =
+            \i season ->
+                { header = text ("s" ++ season.title)
+                , width = fill
+                , view = \rowI -> episodeInRowAtColumn i >> cellView rowI
+                }
+    in
+    List.indexedMap col
 
-epGridColumns : (Int -> Row -> Element msg) -> List Season -> List (Element.Column Row msg)
-epGridColumns cellView = 
-  let
-      col = \i season -> { header = (text season.title)
-                        , width = fill
-                        , view = (cellView i)
-                        }
-  in
-  List.indexedMap col
 
-epCellView : Int -> Row -> Element msg
-epCellView column row =
-  let
-      maybeEp = episodeInRowAtColumn column row
-  in
-  case maybeEp of
-    Just ep -> el [] (text ep.title)
-    Nothing -> el [] (text "x")
 
 ---- PROGRAM ----
 
@@ -135,3 +205,23 @@ main =
         , update = update
         , subscriptions = always Sub.none
         }
+
+
+transposeJagged : List (List a) -> List (List (Maybe a))
+transposeJagged listOfLists =
+    let
+        rowLength =
+            Maybe.withDefault 0 <|
+                List.maximum <|
+                    List.map List.length listOfLists
+
+        maybify =
+            padNothing rowLength << List.map Just
+
+        padNothing maxLength list =
+            list ++ List.repeat (maxLength - List.length list) Nothing
+    in
+    List.foldr
+        (List.map2 (::))
+        (List.repeat rowLength [])
+        (List.map maybify listOfLists)
