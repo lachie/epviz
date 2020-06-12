@@ -1,4 +1,4 @@
-module ColourHeat exposing (heat, heatMaybe)
+module ColourHeat exposing (heat, heatMaybe, ranges)
 
 import Color
 import Element
@@ -98,28 +98,14 @@ heat _ _ value =
         prop =
             proportion lo hi (value * 10)
 
-        _ =
-            Debug.log "value" [ value * 10, h, prop, hi, lo ]
-
         hRatio =
             h / total
-
-        _ =
-            Debug.log "hr" hRatio
 
         s =
             (1 - 0.5) * prop + 0.5
 
         l =
             (0.65 - 0.5) * (1 - prop) + 0.5
-
-        _ =
-            Debug.log "l" l
-
-        -- dist =
-        -- (cold - hot) / total
-        -- ratio =
-        -- value
     in
     Color.hsl hRatio s l |> colorToElmUIColor
 

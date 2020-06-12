@@ -2,12 +2,14 @@ module Main exposing (..)
 
 import Browser
 import ColourHeat exposing (heat)
-import Element exposing (Element, column, el, fill, newTabLink, rgb, row, text, wrappedRow)
+import Element exposing (Element, column, el, fill, height, newTabLink, none, padding, px, rgb, row, text, width, wrappedRow)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Events exposing (onClick)
-import Element.Font exposing (underline)
+import Element.Font as Font exposing (size, underline)
 import Element.Lazy exposing (lazy)
 import Html exposing (Html)
+import Round as Round
 import ShowData
 import Types exposing (Episode, Season, Show)
 
@@ -67,26 +69,33 @@ view model =
     Element.layout []
         (column []
             [ showsView model.shows
-            , case model.show of
-                Just show ->
-                    showView (showViewModel show model.focusedEpisode)
+            , row []
+                [ rangeView
+                , case model.show of
+                    Just show ->
+                        showView (showViewModel show model.focusedEpisode)
 
-                Nothing ->
-                    el [] (text "no show bro")
+                    Nothing ->
+                        el [] (text "no show bro")
+                ]
             ]
         )
 
 
 showsView : List Show -> Element Msg
 showsView shows =
+    let
+        sortedShows =
+            List.sortBy .title shows
+    in
     wrappedRow []
         (List.concatMap
             (\s ->
-                [ el [ onClick (SelectShow s), underline ] (text s.title)
+                [ el [ onClick (SelectShow s), underline, Element.pointer ] (text s.title)
                 , text " "
                 ]
             )
-            shows
+            sortedShows
         )
 
 
@@ -124,14 +133,14 @@ epDetailView showV =
                     ep.rating |> Maybe.withDefault 0
 
                 rating =
-                    (rawRating * 100) |> round |> toFloat |> (*) 0.1
+                    Round.round 1 (rawRating * 10)
 
                 --  |> (/) 10
             in
             Element.paragraph []
                 [ text ep.title
                 , text " "
-                , text (String.fromFloat rating ++ "/10")
+                , text (rating ++ "/10")
                 , text " "
                 , newTabLink [ underline ] { url = "https://www.imdb.com/title/" ++ ep.imdbID, label = text "on imdb" }
                 ]
@@ -162,12 +171,26 @@ epCellView showV _ maybeEp =
             let
                 color =
                     showV.heat ep.rating
+
+                attrs =
+                    [ Background.color color
+                    , onClick (FocusEpisode ep)
+                    , Element.pointer
+                    ]
+
+                borderAttr =
+                    -- [ Border.glow (rgb 0 0.7 0) 3 ]
+                    [ Border.innerGlow (rgb 0 0 0) 1 ]
             in
             el
-                [ Background.color color
-                , onClick (FocusEpisode ep)
-                ]
-                (text " ")
+                (if showV.episode == Just ep then
+                    attrs ++ borderAttr
+
+                 else
+                    attrs
+                )
+            <|
+                text " "
 
         Nothing ->
             el [] Element.none
@@ -198,6 +221,42 @@ epGridColumns cellView =
                 }
     in
     List.indexedMap col
+
+
+
+-- TODO do by ranges
+
+
+rangeView : Element Msg
+rangeView =
+    let
+        w =
+            25
+
+        h =
+            20
+
+        fontSize =
+            10
+
+        steps =
+            3
+
+        values =
+            List.range 0 (steps * 10) |> List.map (\x -> toFloat x / steps / 10) |> List.reverse
+    in
+    column [ padding 20 ]
+        (List.map
+            (\v ->
+                let
+                    heatCol =
+                        heat 0 0 v
+                in
+                el [ Background.color heatCol, width (px w), height (px h), Font.size fontSize, Element.centerX, Element.centerY ] <|
+                    text (Round.round 2 (10 * v))
+            )
+            values
+        )
 
 
 
