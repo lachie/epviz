@@ -2,9 +2,11 @@ module Main exposing (..)
 
 import Browser
 import ColourHeat exposing (heat)
-import Element exposing (Element, column, el, fill, rgb, row, text)
+import Element exposing (Element, column, el, fill, newTabLink, rgb, row, text, wrappedRow)
 import Element.Background as Background
 import Element.Events exposing (onClick)
+import Element.Font exposing (underline)
+import Element.Lazy exposing (lazy)
 import Html exposing (Html)
 import ShowData
 import Types exposing (Episode, Season, Show)
@@ -50,7 +52,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SelectShow show ->
-            ( { model | show = Just show }, Cmd.none )
+            ( { model | show = Just show, focusedEpisode = Nothing }, Cmd.none )
 
         FocusEpisode ep ->
             ( { model | focusedEpisode = Just ep }, Cmd.none )
@@ -77,10 +79,12 @@ view model =
 
 showsView : List Show -> Element Msg
 showsView shows =
-    row []
-        (List.map
+    wrappedRow []
+        (List.concatMap
             (\s ->
-                el [ onClick (SelectShow s) ] (text s.title)
+                [ el [ onClick (SelectShow s), underline ] (text s.title)
+                , text " "
+                ]
             )
             shows
         )
@@ -88,7 +92,7 @@ showsView shows =
 
 showViewModel show focusEp =
     { show = show
-    , heat = ColourHeat.heat (Types.minShowRating show) (Types.maxShowRating show)
+    , heat = ColourHeat.heatMaybe (Types.minShowRating show) (Types.maxShowRating show)
     , episode = focusEp
     }
 
@@ -96,7 +100,7 @@ showViewModel show focusEp =
 type alias ShowViewModel =
     { show : Show
     , episode : Maybe Episode
-    , heat : Float -> Element.Color
+    , heat : Maybe Float -> Element.Color
     }
 
 
@@ -104,7 +108,7 @@ showView : ShowViewModel -> Element Msg
 showView showV =
     column []
         [ row [] [ el [] (text showV.show.title) ]
-        , row [] [ epGridView showV ]
+        , row [] [ lazy epGridView showV ]
         , row [] [ epDetailView showV ]
         ]
 
@@ -116,14 +120,20 @@ epDetailView showV =
 
         Just ep ->
             let
+                rawRating =
+                    ep.rating |> Maybe.withDefault 0
+
                 rating =
-                    (ep.rating * 100) |> round |> toFloat |> (*) 0.1
+                    (rawRating * 100) |> round |> toFloat |> (*) 0.1
 
                 --  |> (/) 10
             in
             Element.paragraph []
                 [ text ep.title
+                , text " "
                 , text (String.fromFloat rating ++ "/10")
+                , text " "
+                , newTabLink [ underline ] { url = "https://www.imdb.com/title/" ++ ep.imdbID, label = text "on imdb" }
                 ]
 
 
@@ -150,11 +160,8 @@ epCellView showV _ maybeEp =
     case maybeEp of
         Just ep ->
             let
-                r =
-                    ep.rating
-
                 color =
-                    showV.heat r
+                    showV.heat ep.rating
             in
             el
                 [ Background.color color
