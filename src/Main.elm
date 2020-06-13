@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser
 import ColourHeat exposing (heat)
+import Dict exposing (Dict)
 import Element exposing (Element, column, el, fill, height, newTabLink, none, padding, px, rgb, row, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
@@ -26,6 +27,7 @@ import Types exposing (Episode, Season, Show)
 
 type alias Model =
     { show : Maybe Show
+    , genres : Dict String (List Show)
     , shows : List Show
     , focusedEpisode : Maybe Episode
     }
@@ -35,6 +37,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { shows = ShowData.shows
       , show = List.head ShowData.shows
+      , genres = Types.byGenre ShowData.shows
       , focusedEpisode = Nothing
       }
     , Cmd.none
@@ -68,7 +71,7 @@ view : Model -> Html Msg
 view model =
     Element.layout []
         (column []
-            [ showsView model.shows
+            [ showsView model
             , row []
                 [ rangeView
                 , case model.show of
@@ -77,13 +80,14 @@ view model =
 
                     Nothing ->
                         el [] (text "no show bro")
+                , epDetailView model.focusedEpisode
                 ]
             ]
         )
 
 
-showsView : List Show -> Element Msg
-showsView shows =
+showsView : Model -> Element Msg
+showsView { shows, genres } =
     let
         sortedShows =
             List.sortBy .title shows
@@ -118,14 +122,13 @@ showView showV =
     column []
         [ row [] [ el [] (text showV.show.title) ]
         , row [] [ lazy epGridView showV ]
-        , row [] [ epDetailView showV ]
         ]
 
 
-epDetailView showV =
-    case showV.episode of
+epDetailView maybeEpisode =
+    case maybeEpisode of
         Nothing ->
-            Element.none
+            none
 
         Just ep ->
             let
@@ -141,6 +144,10 @@ epDetailView showV =
                 [ text ep.title
                 , text " "
                 , text (rating ++ "/10")
+                , text " ("
+                , text (String.fromInt ep.votes)
+                , text " votes) "
+                , text (String.fromInt ep.year)
                 , text " "
                 , newTabLink [ underline ] { url = "https://www.imdb.com/title/" ++ ep.imdbID, label = text "on imdb" }
                 ]
@@ -152,7 +159,9 @@ epGridView showV =
         indexCol =
             { header = Element.none
             , width = fill
-            , view = \i _ -> text (String.fromInt (i + 1))
+            , view =
+                \i _ ->
+                    el [] <| text (String.fromInt (i + 1))
             }
 
         seasons =
@@ -227,6 +236,11 @@ epGridColumns cellView =
 -- TODO do by ranges
 
 
+integral : Float -> Bool
+integral n =
+    n - (n |> truncate |> toFloat) == 0
+
+
 rangeView : Element Msg
 rangeView =
     let
@@ -234,7 +248,7 @@ rangeView =
             25
 
         h =
-            20
+            10
 
         fontSize =
             10
@@ -251,9 +265,22 @@ rangeView =
                 let
                     heatCol =
                         heat 0 0 v
+
+                    v10 =
+                        v * 10
+
+                    tick =
+                        el [ Font.size fontSize, Font.alignRight, width (px 15), Element.paddingEach { top = 0, right = 5, left = 0, bottom = 0 } ] <|
+                            if integral v10 then
+                                text (Round.round 0 v10)
+
+                            else
+                                none
                 in
-                el [ Background.color heatCol, width (px w), height (px h), Font.size fontSize, Element.centerX, Element.centerY ] <|
-                    text (Round.round 2 (10 * v))
+                row []
+                    [ tick
+                    , el [ Background.color heatCol, width (px w), height (px h) ] none
+                    ]
             )
             values
         )
