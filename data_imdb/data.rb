@@ -41,6 +41,19 @@ shows = {
   "mr robot" => "tt4158110",
   "luther" => "tt1474684",
   "venture bros" => "tt0417373",
+  "steven universe" => "tt3061046",
+  "slings and arrows" => "tt0387779",
+  "billions" => "tt4270492",
+  "black mirror" => "tt2085059",
+  "person of interest" => "tt1839578",
+  "brooklyn 99" => "tt2467372",
+  "homeland" => "tt1796960",
+  "better call saul" => "tt3032476",
+  "bosch" => "tt3502248",
+  "house" => "tt0412142",
+  "the witcher" => "tt5180504",
+  "gangs of london" => "tt7661390",
+  "six feet under" => "tt0248654",
 }
 
 def lines_for(kind, &blk)

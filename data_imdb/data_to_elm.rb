@@ -28,6 +28,20 @@ shows.each do |id, show|
   end
 end
 
+def to_elm_record(h)
+  out = []
+
+  h.each do |k,v|
+    out << "#{k} = #{v}"
+  end
+
+  "{ #{ out * ',' } }"
+end
+
+def q(s)
+  %Q!"#{ s }"!
+end
+
 show_data = here+"../src/ShowData.elm"
 show_data.open('w') do |out|
   out.puts "module ShowData exposing (..)"
@@ -49,7 +63,16 @@ show_data.open('w') do |out|
           rating = "(Just #{rtng})"
         end
 
-        %Q!Episode "#{episode["id"]}" "#{episode["title"]}" #{rating}!
+        h = {
+          imdbID: q(episode['id']),
+          title: q(episode['title']),
+          rating: rating,
+          votes: episode.fetch('votes', 0),
+          year: episode['from'],
+          runtimeMinutes: episode['runtime'],
+        }
+
+        to_elm_record(h)
       end
 
 
@@ -66,7 +89,18 @@ show_data.open('w') do |out|
     out.puts seasons * ','
     out.puts "]"
 
-    out.puts %Q!#{show_id} = Show "#{show_id}" "#{show["title"]}" #{show_id}Seasons!
+    genres = show.fetch("genres","").split(',').map {|g| q g}
+
+    show_h = {
+      imdbID: q(show_id),
+      seasons: "#{show_id}Seasons",
+      title: q(show["title"]),
+      fromYear: show["from"],
+      toYear: show["to"],
+      genres: "[#{ genres * ',' }]",
+    }
+
+    out.puts %Q!#{show_id} = #{to_elm_record show_h}!
   end
 
   out.puts %Q!shows = [!
