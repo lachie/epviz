@@ -60,6 +60,19 @@ shows = {
   "peaky blinders" => "tt2442560",
   "the walking dead" => "tt1520211",
   "killing eve" => "tt7016936",
+  "legion" => "tt5114356",
+  "the sinner" => "tt6048596",
+  "stranger things" => "tt4574334",
+  "the orville" => "tt5691552",
+  "dark" => "tt5753856",
+  "always sunny" => "tt0472954",
+  "the americans" => "tt2149175",
+  "rectify" => "tt2183404",
+  "infinity train" => "tt8146754",
+  "gravity falls" => "tt1865718",
+  "the good fight" => "tt5853176",
+  "the fall" => "tt2294189",
+  "banshee" => "tt2017109",
 }
 
 def lines_for(kind, &blk)
