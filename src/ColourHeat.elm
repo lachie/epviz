@@ -4,12 +4,6 @@ import Color
 import Element
 
 
-
--- heat : Float -> Float -> Float -> Element.Color
--- heat =
--- heatHSL >> colorToElmUIColor
-
-
 hot =
     0
 

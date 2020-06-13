@@ -16,6 +16,8 @@ shows = {
   "st:ent" => "tt0244365",
   "st:ds9" => "tt0106145",
   "st:tos" => "tt0060028",
+  "st:dis" => "tt5171438",
+  "st:pic" => "tt8806524",
   "farscape" => "tt0187636",
   "treme" => "tt1279972",
   "the office" => "tt0386676",
@@ -25,6 +27,7 @@ shows = {
   "silicon valley" => "tt2575988",
   "got" => "tt0944947",
   "avatar" => "tt0417299",
+  "korra" => "tt1695360",
   "rick n morty" => "tt2861424",
   "true detective" => "tt2356777",
   "fargo" => "tt2802850",
@@ -54,6 +57,9 @@ shows = {
   "the witcher" => "tt5180504",
   "gangs of london" => "tt7661390",
   "six feet under" => "tt0248654",
+  "peaky blinders" => "tt2442560",
+  "the walking dead" => "tt1520211",
+  "killing eve" => "tt7016936",
 }
 
 def lines_for(kind, &blk)
