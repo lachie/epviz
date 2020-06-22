@@ -10,11 +10,12 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events exposing (onClick)
 import Element.Font as Font exposing (size, underline)
+import Element.Input as Input
 import Element.Lazy exposing (lazy)
 import Html exposing (Html)
 import Round as Round
 import ShowData
-import Types exposing (Episode, Season, Show)
+import Types exposing (Episode, Season, Show, byGenre, searchShows)
 
 
 
@@ -30,6 +31,7 @@ import Types exposing (Episode, Season, Show)
 type alias Model =
     { show : Maybe Show
     , genres : Dict String (List Show)
+    , searchTerm : String
     , shows : List Show
     , focusedEpisode : Maybe Episode
     }
@@ -39,11 +41,17 @@ init : ( Model, Cmd Msg )
 init =
     ( { shows = ShowData.shows
       , show = Nothing
-      , genres = Types.byGenre ShowData.shows
+      , searchTerm = ""
+      , genres = byGenre ShowData.shows
       , focusedEpisode = Nothing
       }
     , Cmd.none
     )
+
+
+genreList : String -> List Show -> Dict String (List Show)
+genreList term =
+    searchShows term >> byGenre
 
 
 
@@ -54,6 +62,8 @@ type Msg
     = SelectShow Types.Show
     | FocusEpisode Types.Episode
     | ClearShow
+    | SearchTermChanged String
+    | ClearSearchTerm
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -67,6 +77,12 @@ update msg model =
 
         ClearShow ->
             ( { model | show = Nothing }, Cmd.none )
+
+        SearchTermChanged term ->
+            ( { model | searchTerm = term, genres = genreList term model.shows }, Cmd.none )
+
+        ClearSearchTerm ->
+            ( { model | searchTerm = "", genres = byGenre ShowData.shows }, Cmd.none )
 
 
 
@@ -182,8 +198,8 @@ showListPanel model =
     Element.textColumn
         [ Font.alignLeft, Element.scrollbarY, alignTop, width <| fillPortion 1, height fill ]
     <|
-        titlePanel
-            :: (genres
+        [ titlePanel, searchPanel model ]
+            ++ (genres
                     |> Dict.toList
                     |> List.concatMap
                         (\( g, shows ) ->
@@ -191,6 +207,20 @@ showListPanel model =
                                 :: showLinks shows
                         )
                )
+
+
+searchPanel : Model -> Element Msg
+searchPanel { searchTerm } =
+    Input.search
+        [ Border.rounded 20
+        , Font.size 15
+        , Element.inFront (el [ alignRight, centerY, paddingEach { right = 10, top = 0, left = 0, bottom = 0 }, onClick ClearSearchTerm, pointer, Font.bold ] (text "x"))
+        ]
+        { onChange = SearchTermChanged
+        , text = searchTerm
+        , placeholder = Just <| Input.placeholder [] <| text "search..."
+        , label = Input.labelHidden "search"
+        }
 
 
 showLinks : List Show -> List (Element Msg)

@@ -1,4 +1,4 @@
-module Types exposing (Episode, Season, Show, byGenre, maxShowRating, minShowRating)
+module Types exposing (Episode, Season, Show, byGenre, maxShowRating, minShowRating, searchShows)
 
 import Dict exposing (Dict)
 
@@ -35,6 +35,16 @@ type alias Genre =
     }
 
 
+searchShows : String -> List Show -> List Show
+searchShows term shows =
+    case term of
+        "" ->
+            shows
+
+        _ ->
+            shows |> List.filter (.title >> String.toLower >> String.contains term)
+
+
 genrePairs : Show -> List ( String, Show )
 genrePairs show =
     show.genres |> List.map (\g -> ( g, show ))
@@ -55,9 +65,6 @@ byGenre shows =
     let
         pairs =
             shows |> List.concatMap genrePairs
-
-        dict =
-            Dict.empty
     in
     pairs |> List.foldl (\( g, s ) -> Dict.update g (mappend s)) Dict.empty
 
