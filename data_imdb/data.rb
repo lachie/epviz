@@ -73,6 +73,23 @@ shows = {
   "the good fight" => "tt5853176",
   "the fall" => "tt2294189",
   "banshee" => "tt2017109",
+  "the great" => "tt2235759",
+  "schitts creek" => "tt3526078",
+  "the dragon prince" => "tt8688814",
+  "rake" => "tt1587000",
+  "bojack" => "tt3398228",
+  "ozark" => "tt5071412",
+  "arrested development" => "tt0367279",
+  "babylon berlin" => "tt4378376",
+  "kimmy schmidt" => "tt3339966",
+  "crazy ex girlfriend" => "tt4094300",
+  "archer" => "tt1486217",
+  "the good place" => "tt4955642",
+  "30 rock" => "tt0496424",
+  "goliath" => "tt4687880",
+  "sneaky pete" => "tt5011816",
+  "fringe" => "tt1119644",
+  
 }
 
 def lines_for(kind, &blk)
