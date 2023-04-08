@@ -13,3 +13,6 @@ cd $HERE
 
 echo creating other tables
 time sqlite3 -bail imdb.db < post-import.sql 
+
+#echo creating our tables
+#time sqlite3 -bail imdb.db < post-custome.sql 

@@ -7,7 +7,6 @@
 
   const fetchResults = async (query: string) => {
     const response = await (await fetch(`/api/search?q=${query}`)).json();
-    console.log("results", response);
     titles = response.titles;
   }
 

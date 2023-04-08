@@ -184,8 +184,11 @@ const addGrid = (palette: VizGradient) => {
 
   const titleSize = 20
 
-  const cellAreaWidth = stage.width() - titleSize
-  const cellAreaHeight = stage.height() - titleSize
+  const w = stage.width()
+  const h = 600; //stage.height()
+
+  const cellAreaWidth = w - titleSize
+  const cellAreaHeight = h - titleSize
 
   g.offset({x: -titleSize, y: -titleSize})
 

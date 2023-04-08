@@ -9,7 +9,7 @@
 
   export let data: PageData;
 
-  $: console.log("page data", data)
+// $: console.log("page data", data)
 
   let epViz: EpViz;
   onMount(async () => {
@@ -20,6 +20,10 @@
 
 <p>
   <b>{data.show.title}</b>
+  &middot;
+  <b>{data.show.start_year}</b>
+  &middot;
+  <b>{data.show.rating}</b>
   &middot;
   <a target="_blank" href="https://www.imdb.com/title/{data.iid}">IMDB</a>
   &middot;

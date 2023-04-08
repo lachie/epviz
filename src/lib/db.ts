@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import * as url from 'url';
 import { parseEpisodes, type EpvizData } from './epviz';
-import { Kysely, SqliteDialect } from 'kysely';
+import { Kysely, SqliteDialect, type Compilable } from 'kysely';
 import type { DB, Show } from './db-types';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
@@ -28,11 +28,17 @@ export async function getAutocompleteResults(query: string): Promise<[string, st
     .map(({ title, iid }) => ([iid, title]));
 }
 
+function log<T extends Compilable>(qb: T): T {
+  console.log(qb.compile())
+  return qb
+}
+
 export async function getBookmarkedShows(): Promise<Show[]> {
   return await db.selectFrom('show')
     .selectAll()
     .innerJoin('show_bookmark', 'show.iid', 'show_bookmark.iid')
-    .orderBy('votes', 'desc')
+    .orderBy('title', 'asc')
+    .$call(log)
     .execute()
 }
 
@@ -59,7 +65,7 @@ export async function setBookmarked(iid: string, bookmarked: boolean) {
 
 export async function getShow(iid: string) {
   return await db.selectFrom('show')
-    .select(['title', 'rating', 'votes'])
+    .select(['title', 'rating', 'votes', 'start_year'])
     .where('iid', '=', iid).executeTakeFirstOrThrow()
 }
 
@@ -71,7 +77,6 @@ export async function getEpisodes(show_iid: string) {
 }
 
 export async function getEpvizData(iid: string): Promise<EpvizData> {
-  console.log("iid", iid)
   const episodes = await getEpisodes(iid);
   return parseEpisodes(episodes);
 }

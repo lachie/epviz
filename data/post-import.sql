@@ -5,14 +5,18 @@ CREATE TABLE show (
   iid TEXT PRIMARY KEY NOT NULL,
   title TEXT NOT NULL,
   votes INTEGER NOT NULL,
-  rating REAL NOT NULL
+  rating REAL NOT NULL,
+  start_year INTEGER NOT NULL,
+  end_year INTEGER NOT NULL
 );
 
-INSERT INTO show (iid, title, votes, rating)
+INSERT INTO show (iid, title, votes, rating, start_year, end_year)
   SELECT t.tconst iid,
     t.primaryTitle as title,
     cast(r.numVotes as INTEGER) as votes,
-    cast(r.averageRating as REAL) as rating
+    cast(r.averageRating as REAL) as rating,
+    cast(t.startYear as INTEGER) as start_year,
+    cast(t.endYear as INTEGER) as end_year
       FROM titles t
       JOIN ratings r ON t.tconst = r.tconst
       WHERE t.titleType = 'tvSeries' OR t.titleType = 'tvMiniSeries'
@@ -20,6 +24,8 @@ INSERT INTO show (iid, title, votes, rating)
       AND title IS NOT NULL
       AND votes IS NOT NULL
       AND rating IS NOT NULL
+      AND start_year IS NOT NULL
+      AND end_year IS NOT NULL
       ;
 
 CREATE INDEX idx_show_iid on show(iid);
@@ -70,9 +76,3 @@ INSERT INTO ep (iid, show_iid, title, votes, rating, year, season, episode)
       ;
 
 CREATE INDEX idx_episode_show_iid on ep(show_iid);
-
-DROP TABLE IF EXISTS show_bookmark;
-CREATE TABLE show_bookmark (
-  iid TEXT PRIMARY KEY,
-  note TEXT
-);

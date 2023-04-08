@@ -27,6 +27,8 @@ export interface Show {
   title: string;
   votes: number;
   rating: number;
+  start_year: number;
+  end_year: number;
 }
 
 export interface ShowBookmark {
