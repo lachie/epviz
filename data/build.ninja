@@ -1,0 +1,8 @@
+rule download
+    command = curl -L -o $out $in
+rule unzip
+    command = gunzip -c $in > $out
+build title.episode.tsv.gz: download https$:////datasets.imdbws.com/title.episode.tsv.gz
+build title.episode.tsv: unzip title.episode.tsv.gz
+build title.ratings.tsv.gz: download https$:////datasets.imdbws.com/title.ratings.tsv.gz
+build title.ratings.tsv: unzip title.ratings.tsv.gz
