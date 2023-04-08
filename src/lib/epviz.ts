@@ -1,15 +1,11 @@
+import type { Ep, Show } from "./db-types"
 
-export type Episode = {
-  id: string,
-  ord: number,
-  title: string,
-  rating: number,
-}
+export { Ep, Show }
 
 export type Season = {
   ord: number,
   ratings: { max: number, min: number },
-  episodes: Episode[]
+  episodes: Ep[]
 }
 
 export type EpvizData = {
@@ -18,7 +14,7 @@ export type EpvizData = {
   seasons: Season[]
 }
 
-export function parseEpisodes(dbEpisodes: Episode[]): EpvizData {
+export function parseEpisodes(dbEpisodes: Ep[]): EpvizData {
   const data: EpvizData = {
     ratings: {
       max: 0,
@@ -30,6 +26,8 @@ export function parseEpisodes(dbEpisodes: Episode[]): EpvizData {
     },
     seasons: [],
   }
+
+  console.log("dbEpisodes", dbEpisodes)
 
   dbEpisodes.forEach((epRecord) => {
     let { season: seasonOrd, episode: episodeOrd } = epRecord;
@@ -49,7 +47,7 @@ export function parseEpisodes(dbEpisodes: Episode[]): EpvizData {
         episodes: [],
       };
     }
-    season.episodes[eIndex] = { ...epRecord, ord: episodeOrd }
+    season.episodes[eIndex] = epRecord
 
     const { rating } = epRecord
 

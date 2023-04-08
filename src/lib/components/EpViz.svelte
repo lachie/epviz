@@ -1,13 +1,16 @@
 <script lang="ts">
   import Konva from "konva";
 import KonvaCanvas from "./KonvaCanvas.svelte";
-import type { Show } from "$lib/db";
-import type { EpvizData, Episode } from "$lib/epviz";
+import type { EpvizData, Show, Ep } from "$lib/epviz";
 import { VizGradient } from "$lib/viz_gradient";
 
 type Dim = {
 	width: number
 	height: number
+}
+type Range = {
+  min: number
+  max: number
 }
 
 let stage: Konva.Stage;
@@ -23,8 +26,72 @@ $: {
   }
 }
 
-const episodeHoverMap = new Map<Episode, Konva.Group>()
-const addEpisode = (cellsGroup: Konva.Group, episode: Episode, cellD: number, [i,j]: [number,number], palette: VizGradient) => {
+const addPalette = (palette: VizGradient, {min, max}: Range) => {
+  const paletteGroup = new Konva.Group()
+
+  const textSize = 12;
+  const paletteWidth = 200
+  const paletteHeight = 10
+
+  const samples = 20;
+
+  const bgRect = new Konva.Rect({
+    x: 0,
+    y: 0,
+    width: paletteWidth,
+    height: paletteHeight+textSize,
+    fill: 'hsl(0,0%,75%)',
+  })
+  paletteGroup.add(bgRect)
+
+  for(let i = 0; i < samples; i++) {
+    const x = i * paletteWidth / samples
+    const rating = min + (max - min) * i / samples
+    const rect = new Konva.Rect({
+      x: x,
+      y: 0,
+      width: paletteWidth / samples,
+      height: paletteHeight,
+      fill: palette.ratingToCss(rating),
+    })
+    paletteGroup.add(rect)
+  }
+
+  const minText = new Konva.Text({
+    x: 0,
+    y: paletteHeight,
+    text: ''+min,
+    fontSize: textSize,
+    fontFamily: "sans-serif",
+    fill: "black",
+    align: "left",
+    verticalAlign: "top",
+  })
+  paletteGroup.add(minText)
+
+  const maxText = new Konva.Text({
+    x: paletteWidth-textSize,
+    y: paletteHeight,
+    text: ''+max,
+    fontSize: textSize,
+    fontFamily: "sans-serif",
+    fill: "black",
+    align: "right",
+    verticalAlign: "top",
+  })
+  paletteGroup.add(maxText)
+
+  return paletteGroup
+}
+
+const episodeHoverMap = new Map<Ep, Konva.Group>()
+const addEpisode = (
+  cellsGroup: Konva.Group,
+  episode: Ep,
+  cellD: number,
+  [i,j]: [number,number],
+  palette: VizGradient
+) => {
   const episodeRect = new Konva.Rect({
     x: i * cellD,
     y: j * cellD,
@@ -112,17 +179,15 @@ const addEpisode = (cellsGroup: Konva.Group, episode: Episode, cellD: number, [i
   cellsGroup.add(episodeRect);
 }
 
-const draw = () => {
-  if(stage === undefined) return
-  if(layer === undefined) return
+const addGrid = (palette: VizGradient) => {
+  const g = new Konva.Group()
 
   const titleSize = 20
 
   const cellAreaWidth = stage.width() - titleSize
   const cellAreaHeight = stage.height() - titleSize
 
-  layer.destroyChildren();
-  layer.absolutePosition({x: titleSize, y: titleSize})
+  g.offset({x: -titleSize, y: -titleSize})
 
   console.log(stage.width(), stage.height());
   console.log(epviz)
@@ -140,24 +205,25 @@ const draw = () => {
   const episodesTitleGroup = new Konva.Group()
   const cellsGroup = new Konva.Group()
 
-  console.log("palette", VizGradient.viridis(epviz.ratings))
-  const palette = VizGradient.viridis(epviz.ratings)
 
-  layer.add(seasonsTitleGroup);
-  layer.add(episodesTitleGroup);
-  layer.add(cellsGroup);
+  g.add(seasonsTitleGroup);
+  g.add(episodesTitleGroup);
+  g.add(cellsGroup);
 
   for(let i = 0; i < seasonCount; i++) {
     const season = epviz.seasons[i];
     const seasonTitle = new Konva.Text({
       x: i * cellD + cellR,
       y: titleSize-12,
-      text: ''+season.ord,
+      text: ''+(i+1),
       fontSize: 12,
       fontFamily: "sans-serif",
       fill: "black",
       align: "center",
       verticalAlign: "middle",
+    });
+    seasonTitle.on("pointerclick", () => {
+      console.log("clicked", season);
     });
     seasonsTitleGroup.add(seasonTitle);
 
@@ -181,6 +247,31 @@ const draw = () => {
     });
     episodesTitleGroup.add(episodeTitle);
   }
+
+  return g
+}
+
+const draw = () => {
+  if(stage === undefined) return
+  if(layer === undefined) return
+
+  layer.destroyChildren();
+
+  console.log("epviz draw")
+
+  console.log("palette", VizGradient.viridis(epviz.ratings))
+  const palette = VizGradient.viridis(epviz.ratings)
+
+  const p = addPalette(palette, epviz.ratings)
+  const g = addGrid(palette)
+
+  const { height: paletteHeight } = p.getClientRect()
+  const margin = 10;
+
+  g.absolutePosition({ x: 0, y: paletteHeight + 10 })
+
+  layer.add(p)
+  layer.add(g);
 
 };
 

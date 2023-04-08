@@ -1,34 +1,52 @@
 
-DROP TABLE IF EXISTS shows;
+DROP TABLE IF EXISTS show;
 
--- CREATE TABLE shows (
-  -- iid TEXT PRIMARY KEY,
-  -- title TEXT NOT NULL,
-  -- votes INTEGER NOT NULL,
-  -- rating REAL NOT NULL
--- );
+CREATE TABLE show (
+  iid TEXT PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
+  votes INTEGER NOT NULL,
+  rating REAL NOT NULL
+);
 
-CREATE TABLE shows AS
+INSERT INTO show (iid, title, votes, rating)
   SELECT t.tconst iid,
     t.primaryTitle as title,
     cast(r.numVotes as INTEGER) as votes,
     cast(r.averageRating as REAL) as rating
       FROM titles t
       JOIN ratings r ON t.tconst = r.tconst
-      WHERE t.titleType = 'tvSeries' OR t.titleType = 'tvMiniSeries';
+      WHERE t.titleType = 'tvSeries' OR t.titleType = 'tvMiniSeries'
+      AND iid IS NOT NULL
+      AND title IS NOT NULL
+      AND votes IS NOT NULL
+      AND rating IS NOT NULL
+      ;
 
-DROP TABLE IF EXISTS shows_fts;
-CREATE VIRTUAL TABLE shows_fts USING fts5(content="shows", iid, title, votes);
+CREATE INDEX idx_show_iid on show(iid);
 
-CREATE INDEX idx_show_iid on shows(iid);
+DROP TABLE IF EXISTS show_fts;
+CREATE VIRTUAL TABLE show_fts USING fts5(content="show", iid, title, votes);
 
-INSERT INTO shows_fts(rowid, iid, title, votes)
-  SELECT rowid, iid, title, votes FROM shows;
 
-DROP TABLE IF EXISTS eps;
+INSERT INTO show_fts(rowid, iid, title, votes)
+  SELECT rowid, iid, title, votes FROM show;
 
-CREATE TABLE eps AS
+DROP TABLE IF EXISTS ep;
+
+CREATE TABLE ep (
+  iid TEXT PRIMARY KEY NOT NULL,
+  show_iid TEXT NOT NULL,
+  title TEXT NOT NULL,
+  votes INTEGER NOT NULL,
+  rating REAL NOT NULL,
+  year REAL NOT NULL,
+  season REAL NOT NULL,
+  episode REAL NOT NULL
+);
+
+INSERT INTO ep (iid, show_iid, title, votes, rating, year, season, episode)
   SELECT t.tconst iid,
+    e.parentTconst show_iid,
     t.primaryTitle as title,
     cast(r.numVotes as INTEGER) as votes,
     cast(r.averageRating as REAL) as rating,
@@ -40,9 +58,18 @@ CREATE TABLE eps AS
       JOIN episodes e ON t.tconst = e.tconst
       WHERE t.titleType = 'tvEpisode'
         AND t.primaryTitle IS NOT NULL
-      AND t.isAdult = '0';
+      AND t.isAdult = '0'
+      AND iid IS NOT NULL
+      AND show_iid IS NOT NULL
+      AND title IS NOT NULL
+      AND votes IS NOT NULL
+      AND rating IS NOT NULL
+      AND year IS NOT NULL
+      AND season IS NOT NULL
+      AND episode IS NOT NULL
+      ;
 
-CREATE INDEX idx_episode_parent_iid on eps(iid);
+CREATE INDEX idx_episode_show_iid on ep(show_iid);
 
 DROP TABLE IF EXISTS show_bookmark;
 CREATE TABLE show_bookmark (

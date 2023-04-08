@@ -1,18 +1,19 @@
+export interface Ep {
+  iid: string;
+  show_iid: string;
+  title: string;
+  votes: number;
+  rating: number;
+  year: number;
+  season: number;
+  episode: number;
+}
+
 export interface Episodes {
   tconst: string | null;
   parentTconst: string | null;
   seasonNumber: string | null;
   episodeNumber: string | null;
-}
-
-export interface Eps {
-  iid: string | null;
-  title: string | null;
-  votes: string | null;
-  rating: number | null;
-  year: string | null;
-  season: string | null;
-  episode: string | null;
 }
 
 export interface Ratings {
@@ -21,40 +22,40 @@ export interface Ratings {
   numVotes: string | null;
 }
 
+export interface Show {
+  iid: string;
+  title: string;
+  votes: number;
+  rating: number;
+}
+
 export interface ShowBookmark {
   iid: string | null;
   note: string | null;
 }
 
-export interface Shows {
-  iid: string | null;
-  title: string | null;
-  votes: string | null;
-  rating: number | null;
-}
-
-export interface ShowsFts {
+export interface ShowFts {
   iid: string | null;
   title: string | null;
   votes: string | null;
 }
 
-export interface ShowsFtsConfig {
+export interface ShowFtsConfig {
   k: string;
   v: string | null;
 }
 
-export interface ShowsFtsData {
+export interface ShowFtsData {
   id: number | null;
   block: Buffer | null;
 }
 
-export interface ShowsFtsDocsize {
+export interface ShowFtsDocsize {
   id: number | null;
   sz: Buffer | null;
 }
 
-export interface ShowsFtsIdx {
+export interface ShowFtsIdx {
   segid: string;
   term: string;
   pgno: string | null;
@@ -73,15 +74,15 @@ export interface Titles {
 }
 
 export interface DB {
+  ep: Ep;
   episodes: Episodes;
-  eps: Eps;
   ratings: Ratings;
+  show: Show;
   show_bookmark: ShowBookmark;
-  shows: Shows;
-  shows_fts: ShowsFts;
-  shows_fts_config: ShowsFtsConfig;
-  shows_fts_data: ShowsFtsData;
-  shows_fts_docsize: ShowsFtsDocsize;
-  shows_fts_idx: ShowsFtsIdx;
+  show_fts: ShowFts;
+  show_fts_config: ShowFtsConfig;
+  show_fts_data: ShowFtsData;
+  show_fts_docsize: ShowFtsDocsize;
+  show_fts_idx: ShowFtsIdx;
   titles: Titles;
 }
