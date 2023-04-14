@@ -4,8 +4,8 @@
   import type { PageData, RouteParams } from './$types';
   import { enhance } from '$app/forms';
 
-	export const prerender = false;
-	export const ssr = false;
+// export const prerender = false;
+// export const ssr = false;
 
   export let data: PageData;
 

@@ -1,12 +1,15 @@
 import Database from 'better-sqlite3';
-import * as url from 'url';
-import { parseEpisodes, type EpvizData } from './epviz';
+import { env } from '$env/dynamic/private';
 import { Kysely, SqliteDialect, type Compilable } from 'kysely';
+
+import { parseEpisodes, type EpvizData } from './epviz';
 import type { DB, Show } from './db-types';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-const dbFile = `${__dirname}/../../data/imdb.db`;
-const database = new Database(dbFile);
+//const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+//const dbFile = `${__dirname}/../../data/imdb.db`;
+
+console.log("DB_PATH", env.DB_PATH)
+const database = new Database(env.DB_PATH);
 
 const db = new Kysely<DB>({
   dialect: new SqliteDialect({database}),
@@ -38,7 +41,6 @@ export async function getBookmarkedShows(): Promise<Show[]> {
     .selectAll()
     .innerJoin('show_bookmark', 'show.iid', 'show_bookmark.iid')
     .orderBy('title', 'asc')
-    .$call(log)
     .execute()
 }
 

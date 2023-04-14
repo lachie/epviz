@@ -4,8 +4,6 @@
 
   export let data: PageData;
 
-  console.log("bookmarked", data.bookmarks)
-
   const go = (iid) => {
     console.log("go", iid)
     window.location.href = `/show/${iid}`

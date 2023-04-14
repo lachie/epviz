@@ -27,8 +27,6 @@ export function parseEpisodes(dbEpisodes: Ep[]): EpvizData {
     seasons: [],
   }
 
-  console.log("dbEpisodes", dbEpisodes)
-
   dbEpisodes.forEach((epRecord) => {
     let { season: seasonOrd, episode: episodeOrd } = epRecord;
     if(isNaN(seasonOrd) || isNaN(episodeOrd)) {
@@ -63,4 +61,19 @@ export function parseEpisodes(dbEpisodes: Ep[]): EpvizData {
   data.seasonExtents.min = Math.min(...seasonLengths)
 
   return data
+}
+
+export function epvizGrid(epviz: EpvizData) {
+  const { seasons, seasonExtents } = epviz
+  const grid: Ep[][] = []
+  for(let i = 0; i < seasonExtents.max; i++) {
+    grid[i] ||= []
+    for(let j = 0; j < seasons.length; j++) {
+      const season = seasons[j]
+      const ep = season.episodes[i]
+      grid[i][j] = ep
+    }
+  }
+
+  return grid
 }

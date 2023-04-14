@@ -25,6 +25,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-node": "^1.2.3",
 		"better-sqlite3": "^8.2.0",
 		"konva": "^8.4.3"
 	}

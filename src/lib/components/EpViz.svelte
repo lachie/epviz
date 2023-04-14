@@ -192,9 +192,6 @@ const addGrid = (palette: VizGradient) => {
 
   g.offset({x: -titleSize, y: -titleSize})
 
-  console.log(stage.width(), stage.height());
-  console.log(epviz)
-
   const seasonCount = epviz.seasons.length;
   const episodeCount = epviz.seasonExtents.max
 
