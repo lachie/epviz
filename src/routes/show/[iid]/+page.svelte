@@ -63,7 +63,7 @@
   </div>
 
   <div>
-    <SeasonSummary epviz={data.epviz} />
+    <!--<SeasonSummary epviz={data.epviz} />-->
   </div>
 
   <div class="shrink max-h-40 {currentZoom}">

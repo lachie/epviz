@@ -1,12 +1,15 @@
 <script>
-		import "../app.css";
+		import Header from "$lib/components/Header.svelte";
+import "../app.css";
 </script>
 
 <nav>
-  <a href="/">Home</a>
+  <Header />
 </nav>
 
-<slot></slot>
+<div class="container mx-auto mt-6">
+  <slot></slot>
+</div>
 
 <style>	
 </style>
