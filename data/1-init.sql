@@ -1,3 +1,4 @@
+ATTACH DATABASE 'base.sqlite' as imdb;
 
 DROP TABLE IF EXISTS show;
 
@@ -17,8 +18,8 @@ INSERT INTO show (iid, title, votes, rating, start_year, end_year)
     cast(r.averageRating as REAL) as rating,
     cast(t.startYear as INTEGER) as start_year,
     cast(t.endYear as INTEGER) as end_year
-      FROM titles t
-      JOIN ratings r ON t.tconst = r.tconst
+      FROM imdb.titles t
+      JOIN imdb.ratings r ON t.tconst = r.tconst
       WHERE t.titleType = 'tvSeries' OR t.titleType = 'tvMiniSeries'
       AND iid IS NOT NULL
       AND title IS NOT NULL
@@ -59,9 +60,9 @@ INSERT INTO ep (iid, show_iid, title, votes, rating, year, season, episode)
     cast(t.startYear as INTEGER) as year,
     cast(e.seasonNumber as INTEGER) as season,
     cast(e.episodeNumber as INTEGER) as episode
-      FROM titles t
-      JOIN ratings r ON t.tconst = r.tconst
-      JOIN episodes e ON t.tconst = e.tconst
+      FROM imdb.titles t
+      JOIN imdb.ratings r ON t.tconst = r.tconst
+      JOIN imdb.episodes e ON t.tconst = e.tconst
       WHERE t.titleType = 'tvEpisode'
         AND t.primaryTitle IS NOT NULL
       AND t.isAdult = '0'

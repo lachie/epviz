@@ -1,10 +1,16 @@
 #!/bin/bash
 
-HERE=$(dirname $0)
+set -euo pipefail
+[[ ${DEBUG:-} ]] && set -x
 
-cd $HERE
+HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 
 #https://datasets.imdbws.com/
+
+: ${CLEAN:-}
+if [[ $CLEAN ]]; then
+  rm -f *.tsv
+fi
 
 basics_url=https://datasets.imdbws.com/title.basics.tsv.gz
 episodes_url=https://datasets.imdbws.com/title.episode.tsv.gz

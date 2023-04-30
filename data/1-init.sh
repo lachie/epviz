@@ -7,12 +7,9 @@ HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 
 cd $HERE
 
-#rm -f imdb.db
-#echo importing base data
-#time sqlite3 -bail imdb.db < import.sql
-
-echo creating other tables
-time sqlite3 -bail imdb.db < post-import.sql 
+rm -rf shows.sqlite
+echo massaging data
+time sqlite3 -bail shows.sqlite < 1-init.sql 
 
 #echo creating our tables
 #time sqlite3 -bail imdb.db < post-custome.sql 
