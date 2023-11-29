@@ -69,6 +69,17 @@ export class VizGradient {
         const [hue, saturation, lightness] = this.unitToHSL(scaled);
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
+
+    ratingTextColour(rating: number): string {
+      const unit = rating/10
+      const scaled = normalise(unit, this.unitRange.min, this.unitRange.max);
+      const [_hue, _saturation, lightness] = this.unitToHSL(scaled);
+      if (lightness > 50) {
+        return "black";
+      }
+      return "white";
+    }
+
 }
 
 

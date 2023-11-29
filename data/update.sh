@@ -5,8 +5,6 @@ set -euo pipefail
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 
-cd $HERE
-
-rm -f base.sqlite
-echo importing base data
-time sqlite3 -bail base.sqlite < 0-import.sql
+CLEAN=1 ./0-download-data.sh
+./0-import-data.sh
+./1-import-shows.sh

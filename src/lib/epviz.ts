@@ -4,7 +4,7 @@ export { Ep, Show }
 
 export type Season = {
   ord: number,
-  ratings: { max: number, min: number },
+  ratings: { max: number, min: number, avg: number },
   episodes: Ep[]
 }
 
@@ -41,6 +41,7 @@ export function parseEpisodes(dbEpisodes: Ep[]): EpvizData {
         ratings: {
           max: 0,
           min: 10,
+          avg: 0,
         },
         episodes: [],
       };
@@ -51,6 +52,7 @@ export function parseEpisodes(dbEpisodes: Ep[]): EpvizData {
 
     season.ratings.max = Math.max(season.ratings.max, rating)
     season.ratings.min = Math.min(season.ratings.min, rating)
+    season.ratings.avg = season.episodes.reduce((a, b) => a + b.rating, 0) / season.episodes.length
 
     data.ratings.max = Math.max(data.ratings.max, rating)
     data.ratings.min = Math.min(data.ratings.min, rating)

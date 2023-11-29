@@ -4,7 +4,7 @@ import { Kysely, SqliteDialect, type Compilable, sql } from 'kysely';
 
 import { parseEpisodes, type EpvizData } from './epviz';
 import type { DB as DetachedShowDB, Show } from './db-types';
-import type { DB as EpvizDB } from './db-epviz-types';
+import type { DB as EpvizDB, ShowBookmark } from './db-epviz-types';
 
 // the show db is attached via sqlite ATTACH DATABASE
 // how do I remap the keys to be prefixed with 'show.' ?
@@ -25,6 +25,12 @@ database.exec(`ATTACH DATABASE '${env.SHOW_DB_PATH}' AS shows`)
 
 const db = new Kysely<DB>({
   dialect: new SqliteDialect({database}),
+  log(event) {
+    if (event.level === 'query') {
+      console.log(event.query.sql)
+      console.log(event.query.parameters)
+    }
+  }
 })
 
 export async function getAutocompleteResults(query: string): Promise<[string, string][]> {
@@ -48,22 +54,32 @@ function log<T extends Compilable>(qb: T): T {
   return qb
 }
 
-export async function getBookmarkedShows(): Promise<Show[]> {
-  return await db.selectFrom('shows.show')
-    .selectAll()
-    .innerJoin('show_bookmark', 'shows.show.iid', 'show_bookmark.iid')
+export async function getBookmarkedShows(): Promise<(Show & ShowBookmark)[]> {
+  return await db.selectFrom('shows.show as show')
+    .innerJoin('show_bookmark', 'show.iid', 'show_bookmark.iid')
+    .selectAll<'show_bookmark'>('show_bookmark')
+    .selectAll<'show'>('show')
+    .orderBy('show_bookmark.favourite', 'desc')
     .orderBy('title', 'asc')
     .execute()
+
+  //return await db.selectFrom('shows.show')
+    //.innerJoin('show_bookmark', 'shows.show.iid', 'show_bookmark.iid')
+    //.selectAll('shows.show')
+    //.select(['show_bookmark.favourite as favourite'])
+    //.orderBy('show_bookmark.favourite', 'desc')
+    //.orderBy('title', 'asc')
+    //.execute()
 }
 
-export async function getBookmarked(iid: string): Promise<boolean> {
+export async function getBookmarked(iid: string): Promise<[boolean,boolean]> {
   const bookmark = await db
     .selectFrom('show_bookmark')
-    .select(['iid'])
+    .select(['iid', 'favourite'])
     .where('iid', '=', iid)
     .executeTakeFirst()
 
-    return !!bookmark
+    return [!!bookmark, !!bookmark?.favourite]
 }
 
 export async function setBookmarked(iid: string, bookmarked: boolean) {
@@ -74,9 +90,13 @@ export async function setBookmarked(iid: string, bookmarked: boolean) {
   }
 }
 
+export async function setFavourited(iid: string, favourite: boolean) {
+  await db.updateTable('show_bookmark').set({ favourite: favourite ? 1 : 0 }).where('iid', '=', iid).execute()
+}
+
 export async function getShow(iid: string) {
   return await db.selectFrom('shows.show')
-    .select(['title', 'rating', 'votes', 'start_year'])
+    .select(['title', 'rating', 'votes', 'start_year', 'end_year'])
     .where('iid', '=', iid).executeTakeFirstOrThrow()
 }
 

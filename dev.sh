@@ -14,4 +14,4 @@ export SHOW_DB_PATH=$DATA/shows.sqlite
 export PORT=5050
 #export ORIGIN=http://10.28.10.28:5050
 
-yarn dev
+npm run dev -- --host 0.0.0.0 --port $PORT

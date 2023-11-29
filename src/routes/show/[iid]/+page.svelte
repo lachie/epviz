@@ -5,6 +5,7 @@
   import { Icon, Bookmark, BookmarkSlash } from "svelte-hero-icons";
   import settingsStore from '$lib/settings';
     import SeasonSummary from '$lib/components/SeasonSummary.svelte';
+    import type { Ep } from '$lib/epviz';
 
   type Zoom = keyof typeof zooms;
 
@@ -17,6 +18,10 @@
 
   $: currentZoom = zoomForLabel($zoom); 
   const setZoom = (newZoom: string) => $zoom = newZoom
+
+  const onSelectEp = ({ detail: ep }: CustomEvent<Ep>) => {
+    window.open(`https://www.imdb.com/title/${ep.iid}`, '_blank')
+  }
 
   $: console.log("zoom", $zoom)
   $: console.log("currentZoom", currentZoom)
@@ -32,6 +37,8 @@
       </div>
       <div>
         <b>{data.show.start_year}</b>
+        &mdash;
+        <b>{data.show.end_year}</b>
       </div>
       <div>
         <b>{data.show.rating}</b>
@@ -39,20 +46,17 @@
       <div>
         <a target="_blank" href="https://www.imdb.com/title/{data.iid}">IMDB</a>
       </div>
-      <div>
-        {#if data.bookmarked}
-        <form method="POST" class="" action="?/unbookmark" use:enhance>
+      <div class="flex flex-row">
+        <form method="POST" class="" action={`?/${data.bookmarked ? 'un' : ''}bookmark`} use:enhance>
           <button class="btn btn-primary btn-sm" type="submit">
-            <Icon src={BookmarkSlash} mini />
+            <Icon src={data.bookmarked ? BookmarkSlash : Bookmark} mini />
           </button>
         </form>
-        {:else}
-        <form method="POST" action="?/bookmark" use:enhance>
+        <form method="POST" class="" action={`?/${data.favourited ? 'un' : ''}fave`} use:enhance>
           <button class="btn btn-primary btn-sm" type="submit">
-            <Icon src={Bookmark} mini />
+            {data.favourited ? '🌟' : '⭐'}
           </button>
         </form>
-        {/if}
       </div>
       <div>
         {#each Object.keys(zooms) as zoomLabel}
@@ -67,6 +71,6 @@
   </div>
 
   <div class="shrink max-h-40 {currentZoom}">
-    <EpViz epviz={data.epviz} />
+    <EpViz epviz={data.epviz} on:selectEp={onSelectEp} />
   </div>
 </div>
