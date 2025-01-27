@@ -28,9 +28,10 @@
 	"type": "module",
 	"dependencies": {
 		"@sveltejs/pancake": "^0.0.18",
-		"better-sqlite3": "^8.2.0",
+		"better-sqlite3": "^11.7.2",
 		"daisyui": "^2.51.5",
 		"konva": "^8.4.3",
 		"kysely": "^0.26.0"
-	}
+	},
+	"packageManager": "npm@9.6.6+sha1.553376bb7b5de4b1cf2b5f3471f674b678c7e14d"
 }

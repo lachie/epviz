@@ -4,7 +4,6 @@
   import { enhance } from '$app/forms';
   import { Icon, Bookmark, BookmarkSlash } from "svelte-hero-icons";
   import settingsStore from '$lib/settings';
-    import SeasonSummary from '$lib/components/SeasonSummary.svelte';
     import type { Ep } from '$lib/epviz';
 
   type Zoom = keyof typeof zooms;

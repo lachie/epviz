@@ -1,0 +1,4 @@
+node_modules
+data
+!data/shows.sqlite
+!data/epviz.sqlite

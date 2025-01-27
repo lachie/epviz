@@ -13,3 +13,5 @@ data/importer
 data/imdb.db
 data/*.tsv
 *.sqlite
+data/*.gz
+data/*.tsv

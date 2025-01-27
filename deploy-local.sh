@@ -5,6 +5,8 @@ set -euo pipefail
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 
+cd $HERE
+
 npm run build
 dist=$HERE/build
 
@@ -16,5 +18,6 @@ export DB_PATH=$HERE/data/epviz.sqlite
 export SHOW_DB_PATH=$HERE/data/shows.sqlite
 export PORT=5050
 export ORIGIN=http://10.28.10.28:5050
+export ORIGIN=http://bops.lmox.au:5050
 
 node .

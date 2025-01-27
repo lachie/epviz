@@ -1,0 +1,17 @@
+version: "3"
+services:
+  epviz:
+    container_name: epviz
+    restart: unless-stopped
+    build:
+      context: .
+    ports:
+      - 5050:5050
+    environment:
+      - DB_PATH=/data/epviz.sqlite
+      - SHOW_DB_PATH=/data/shows.sqlite
+      - PORT=5050
+      - ORIGIN=http://bops.lmox.au:5050
+    volumes:
+      - ./data:/data
+
