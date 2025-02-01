@@ -32,7 +32,8 @@ INSERT INTO show (iid, title, votes, rating, start_year, end_year)
 CREATE INDEX idx_show_iid on show(iid);
 
 DROP TABLE IF EXISTS show_fts;
-CREATE VIRTUAL TABLE show_fts USING fts5(content="show", iid, title, votes);
+CREATE VIRTUAL TABLE show_fts USING fts5(content="show", iid, title, votes, tokenize = 'porter unicode61');
+-- CREATE VIRTUAL TABLE show_fts USING fts5(content="show", iid, title, votes);
 
 
 INSERT INTO show_fts(rowid, iid, title, votes)

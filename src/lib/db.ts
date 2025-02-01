@@ -24,7 +24,7 @@ const database = new Database(env.DB_PATH);
 database.exec(`ATTACH DATABASE '${env.SHOW_DB_PATH}' AS shows`)
 
 const db = new Kysely<DB>({
-  dialect: new SqliteDialect({database}),
+  dialect: new SqliteDialect({ database }),
   log(event) {
     if (event.level === 'query') {
       console.log(event.query.sql)
@@ -43,7 +43,7 @@ export async function getAutocompleteResults(query: string): Promise<[string, st
     .where('title', 'match', query)
     .orderBy('votes', 'desc')
     .limit(20)
-    .execute() as {title:string, iid:string}[]
+    .execute() as { title: string, iid: string }[]
 
   return results
     .map(({ title, iid }) => ([iid, title]));
@@ -54,32 +54,27 @@ function log<T extends Compilable>(qb: T): T {
   return qb
 }
 
-export async function getBookmarkedShows(): Promise<(Show & ShowBookmark)[]> {
+// export async function getBookmarkedShows(): Promise<(Show & ShowBookmark)[]> {
+export async function getBookmarkedShows() {
   return await db.selectFrom('shows.show as show')
     .innerJoin('show_bookmark', 'show.iid', 'show_bookmark.iid')
+    .leftJoin('last_viewed', 'show.iid', 'last_viewed.iid')
     .selectAll<'show_bookmark'>('show_bookmark')
     .selectAll<'show'>('show')
     .orderBy('show_bookmark.favourite', 'desc')
+    .orderBy((c) => c.case().when('last_viewed.last_viewed', 'is not', null).then(c.ref("last_viewed.last_viewed")).else(0).end(), 'desc')
     .orderBy('title', 'asc')
     .execute()
-
-  //return await db.selectFrom('shows.show')
-    //.innerJoin('show_bookmark', 'shows.show.iid', 'show_bookmark.iid')
-    //.selectAll('shows.show')
-    //.select(['show_bookmark.favourite as favourite'])
-    //.orderBy('show_bookmark.favourite', 'desc')
-    //.orderBy('title', 'asc')
-    //.execute()
 }
 
-export async function getBookmarked(iid: string): Promise<[boolean,boolean]> {
+export async function getBookmarked(iid: string): Promise<[boolean, boolean]> {
   const bookmark = await db
     .selectFrom('show_bookmark')
     .select(['iid', 'favourite'])
     .where('iid', '=', iid)
     .executeTakeFirst()
 
-    return [!!bookmark, !!bookmark?.favourite]
+  return [!!bookmark, !!bookmark?.favourite]
 }
 
 export async function setBookmarked(iid: string, bookmarked: boolean) {
@@ -92,6 +87,13 @@ export async function setBookmarked(iid: string, bookmarked: boolean) {
 
 export async function setFavourited(iid: string, favourite: boolean) {
   await db.updateTable('show_bookmark').set({ favourite: favourite ? 1 : 0 }).where('iid', '=', iid).execute()
+}
+
+export async function setLastViewed(iid: string) {
+  await db.insertInto('last_viewed')
+    .values({ iid, last_viewed: sql<string>`CURRENT_TIMESTAMP` })
+    .onConflict((oc) => oc.column('iid').doUpdateSet({ last_viewed: sql<string>`CURRENT_TIMESTAMP` }))
+    .execute()
 }
 
 export async function getShow(iid: string) {

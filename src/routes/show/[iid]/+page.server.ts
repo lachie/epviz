@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { getBookmarked, getEpvizData, getShow, setBookmarked, setFavourited } from '$lib/db';
+import { getBookmarked, getEpvizData, getShow, setBookmarked, setFavourited, setLastViewed } from '$lib/db';
 import type { PageServerLoad, Actions } from './$types';
- 
+
 export const actions = {
   bookmark: async (event) => {
     await setBookmarked(event.params.iid, true)
@@ -16,21 +16,18 @@ export const actions = {
     await setFavourited(event.params.iid, false)
   }
 } satisfies Actions;
- 
+
 const load: PageServerLoad = async ({ params }) => {
 
   try {
-    const show = await getShow(params.iid);
-    const epviz = await getEpvizData(params.iid);
-    const [bookmarked, favourited] = await getBookmarked(params.iid);
+    const values = await Promise.all([getShow(params.iid), getEpvizData(params.iid), getBookmarked(params.iid)] as const)
+    const [show, epviz, [bookmarked, favourited]] = values
 
     return { epviz, show, iid: params.iid, bookmarked, favourited };
   } catch (e) {
     console.error(e);
     error(404, 'Not found');
   }
- 
-  //throw error(404, 'Not found');
 }
 
 export { load }

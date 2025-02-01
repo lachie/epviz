@@ -7,9 +7,9 @@ HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 
 kc="$HERE/node_modules/.bin/kysely-codegen"
 
-$kc \
-  --url $HERE/data/shows.sqlite \
-  --out-file $HERE/src/lib/db-types.d.ts 
+# $kc \
+  # --url $HERE/data/shows.sqlite \
+  # --out-file $HERE/src/lib/db-types.d.ts 
   #--include-pattern '(shows,eps,show_fts)'
 
 $kc \
