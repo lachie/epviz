@@ -12,7 +12,7 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/adapter-node": "^1.2.3",
-		"@sveltejs/kit": "^1.5.0",
+		"@sveltejs/kit": "^1.30.0",
 		"@types/better-sqlite3": "^7.6.3",
 		"autoprefixer": "^10.4.14",
 		"kysely-codegen": "^0.10.1",
