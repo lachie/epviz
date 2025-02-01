@@ -2,12 +2,12 @@
   import { onMount } from 'svelte';
 // import { debounce } from 'lodash-es';
 
-  let searchInput = '';
-  let focused = false;
-  let titles: string[] = [];
-  let imdbId: string | undefined
-  let listRef: HTMLDivElement;
-  $: showing = focused && searchInput.length > 0;
+  let searchInput = $state('');
+  let focused = $state(false);
+  let titles: string[] = $state([]);
+  let imdbId: string | undefined = $state()
+  let listRef: HTMLDivElement = $state();
+  let showing = $derived(focused && searchInput.length > 0);
 
   const fetchResults = async (query: string) => {
     console.log("qeury", query, query.slice(0,2))
@@ -42,9 +42,9 @@
   <input
     type="text"
     bind:value="{searchInput}"
-    on:input={debounce}
-    on:focus={() => focused = true}
-    on:blur={handleBlur}
+    oninput={debounce}
+    onfocus={() => focused = true}
+    onblur={handleBlur}
     placeholder="Search..."
     class="input input-bordered"
   />
@@ -59,7 +59,7 @@
       <ul>
         {#each titles as [id,title]}
           <li>
-            <a href="/show/{id}" class="btn btn-ghost" on:click={() => focused = false}>
+            <a href="/show/{id}" class="btn btn-ghost" onclick={() => focused = false}>
             {title}
             </a>
           </li>

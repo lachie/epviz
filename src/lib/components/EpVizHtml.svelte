@@ -17,8 +17,13 @@
   };
   const dispatch = createEventDispatcher<Events>();
 
-  //export let show: Show;
-  export let epviz: EpvizData;
+  
+  interface Props {
+    //export let show: Show;
+    epviz: EpvizData;
+  }
+
+  let { epviz }: Props = $props();
 
   console.log("epviz", epviz);
 
@@ -65,9 +70,9 @@
         <div
           class="aspect-square cursor-pointer group relative inline-block"
           style:background-color={palette.ratingToCss(ep.rating)}
-          on:click={() => selectEp("click", ep)}
-          on:dblclick={() => selectEp("dblclick", ep)}
-          on:keydown={() => selectEp("key", ep)}
+          onclick={() => selectEp("click", ep)}
+          ondblclick={() => selectEp("dblclick", ep)}
+          onkeydown={() => selectEp("key", ep)}
         >
           <div class="absolute w-full h-full">&nbsp;</div>
           <div

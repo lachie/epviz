@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Konva from "konva";
 import KonvaCanvas from "./KonvaCanvas.svelte";
 import type { EpvizData, Show, Ep } from "$lib/epviz";
@@ -13,18 +15,15 @@ type Range = {
   max: number
 }
 
-let stage: Konva.Stage;
-let layer: Konva.Layer;
-export let show: Show;
-export let epviz: EpvizData
-
-$: {
-  if(stage) {
-    layer = new Konva.Layer();
-    stage.add(layer);
-    draw()
+let stage: Konva.Stage = $state();
+let layer: Konva.Layer = $state();
+  interface Props {
+    show: Show;
+    epviz: EpvizData;
   }
-}
+
+  let { show, epviz }: Props = $props();
+
 
 const addPalette = (palette: VizGradient, {min, max}: Range) => {
   const paletteGroup = new Konva.Group()
@@ -279,6 +278,13 @@ const onResize = (e: CustomEvent<Dim>) => {
   console.log("canvas resized", e.detail);
   draw()
 }
+run(() => {
+  if(stage) {
+    layer = new Konva.Layer();
+    stage.add(layer);
+    draw()
+  }
+});
 </script>
 
 <KonvaCanvas bind:stage on:resized={onResize} />

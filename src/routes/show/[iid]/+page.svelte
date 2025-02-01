@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import EpViz from '$lib/components/EpVizHtml.svelte';
   import type { PageData, RouteParams } from './$types';
   import { enhance } from '$app/forms';
@@ -12,20 +14,30 @@
   const zoomForLabel = (label: string): string => zooms[label as Zoom] || zooms['100%'];
 
   const zoom = settingsStore('zoom', '100%')
-  let currentZoom = zoomForLabel($zoom)
+  let currentZoom = $state(zoomForLabel($zoom))
 
 
-  $: currentZoom = zoomForLabel($zoom); 
+  run(() => {
+    currentZoom = zoomForLabel($zoom);
+  }); 
   const setZoom = (newZoom: string) => $zoom = newZoom
 
   const onSelectEp = ({ detail: ep }: CustomEvent<Ep>) => {
     window.open(`https://www.imdb.com/title/${ep.iid}`, '_blank')
   }
 
-  $: console.log("zoom", $zoom)
-  $: console.log("currentZoom", currentZoom)
+  run(() => {
+    console.log("zoom", $zoom)
+  });
+  run(() => {
+    console.log("currentZoom", currentZoom)
+  });
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 </script>
 
 <div class="flex flex-col">
@@ -59,7 +71,7 @@
       </div>
       <div>
         {#each Object.keys(zooms) as zoomLabel}
-          <button class:underline={zoomLabel===$zoom} on:click={() => setZoom(zoomLabel)}>{zoomLabel}</button>
+          <button class:underline={zoomLabel===$zoom} onclick={() => setZoom(zoomLabel)}>{zoomLabel}</button>
         {/each}
       </div>
     </div>

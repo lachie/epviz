@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { onMount, createEventDispatcher } from 'svelte'
 	import Konva from 'konva'
 
@@ -12,15 +14,14 @@ const dispatch = createEventDispatcher<{resized: Dim}>();
 	let width = 0
 	let height = 0
 	
-  export let stage: Konva.Stage
-	let container: HTMLDivElement
-
-
-	$: {
-		if(stage) {
-			handleSize()
-		}
+	interface Props {
+		stage: Konva.Stage;
 	}
+
+	let { stage = $bindable() }: Props = $props();
+	let container: HTMLDivElement = $state()
+
+
 	
 	onMount(async () => {
 		stage = new Konva.Stage({
@@ -42,14 +43,19 @@ const dispatch = createEventDispatcher<{resized: Dim}>();
 
 		dispatch('resized', { width, height })
 	}
+	run(() => {
+		if(stage) {
+			handleSize()
+		}
+	});
 </script>
 
-<svelte:window on:resize={handleSize} />
+<svelte:window onresize={handleSize} />
 
 <div 
 	bind:this={container}
 	style:border="1px solid black"
-	style:background="#eee"/>
+	style:background="#eee"></div>
 
 <style>
 	div {
