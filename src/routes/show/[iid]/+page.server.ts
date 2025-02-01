@@ -27,7 +27,7 @@ const load: PageServerLoad = async ({ params }) => {
     return { epviz, show, iid: params.iid, bookmarked, favourited };
   } catch (e) {
     console.error(e);
-    throw error(404, 'Not found');
+    error(404, 'Not found');
   }
  
   //throw error(404, 'Not found');
